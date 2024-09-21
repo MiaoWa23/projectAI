@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision to Hire</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #FFFBDA;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      /* ตั้งค่าเริ่มต้นสำหรับ popup */
+      .popup {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        height: 400px;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        z-index: 1000;
+        box-sizing: border-box;
+      }
+
+      /* ตั้งค่า popup-content ให้ใช้ flexbox และกึ่งกลางเนื้อหาทั้งแนวตั้งและแนวนอน */
+      .popup-content {
+        display: flex;
+        justify-content: center;
+        align-items: center; /* กึ่งกลางแนวตั้ง */
+        height: 100%;
+      }
+
+      #popupContent{
+        font-size: 48px;
+        color: black;
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+
+      /* สำหรับฉากหลังของ popup */
+      .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+
+      /* ปุ่มกากบาท */
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: black;
+        width: 10px;
+        height: 10px;
+        margin: 0;
+        padding: 0;
+      }
+
+      .close-btn:hover{
+        color: black;
+      }
+
+      .banner-container{
+        margin-top: 10px;
+      }
+
+      img{
+        width: 860px;
+      }
+
+      .outside-container{
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 800px;
+        margin-top: 10px; /* เพิ่มการเว้นขอบด้านบน */
+        margin-bottom: 50px; /* เพิ่มการเว้นขอบด้านล่าง */
+      }
+      .outside-container .container {
+        width: 400px;
+      }
+
+      label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+      }
+
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      button {
+        width: calc(50% - 10px);
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      /* button:hover {
+        background-color: #0056b3;
+      } */
+
+      .button-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      button.clear-form{
+        border: 2px solid #007bff; /* ขอบสีน้ำเงิน */
+        background-color: white; /* พื้นหลังสีขาว */
+        color: #007bff; /* ตัวอักษรสีน้ำเงิน */
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      #result {
+        text-align: center;
+        font-size: 18px;
+        color: #333;
+        margin-top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner-container">
+      <img src="{{ url_for('static', filename='images/banner.png') }}" alt="Banner Image">    
+    </div>
+    <div class="outside-container">
+      <div class="container">
+        <h1>Predicting Hiring Decisions in Recruitment Data</h1>
+        <form id="form">
+          <!-- ฟอร์มกรอกข้อมูลผู้สมัคร -->
+          <label for="Age">Age</label>
+          <input type="number" id="Age" name="Age" min="20" max="50" required />
+
+          <label for="Gender">Gender</label>
+          <select id="Gender" name="Gender" required>
+            <option value="" disabled selected>- Select -</option>
+            <option value="0">Male</option>
+            <option value="1">Female</option>
+          </select>
+
+          <label for="EducationLevel">Education Level</label>
+          <select id="EducationLevel" name="EducationLevel" required>
+            <option value="" disabled selected>- Select -</option>
+            <option value="1">Bachelor's (General)</option>
+            <option value="2">Bachelor's (Honours)</option>
+            <option value="3">Master's</option>
+            <option value="4">PhD</option>
+          </select>
+
+          <label for="ExperienceYears">Experience Years</label>
+          <input
+            type="number"
+            id="ExperienceYears"
+            name="ExperienceYears"
+            min="0"
+            max="15"
+            required
+          />
+
+          <label for="PreviousCompanies">Previous Companies</label>
+          <input
+            type="number"
+            id="PreviousCompanies"
+            name="PreviousCompanies"
+            min="1"
+            max="5"
+            required
+          />
+
+          <label for="DistanceFromCompany">Distance From Company (km)</label>
+          <input
+            type="number"
+            id="DistanceFromCompany"
+            name="DistanceFromCompany"
+            min="1"
+            max="50"
+            step="0.1"
+            required
+          />
+
+          <label for="InterviewScore">Interview Score</label>
+          <input
+            type="number"
+            id="InterviewScore"
+            name="InterviewScore"
+            min="0"
+            max="100"
+            required
+          />
+
+          <label for="SkillScore">Skill Score</label>
+          <input
+            type="number"
+            id="SkillScore"
+            name="SkillScore"
+            min="0"
+            max="100"
+            required
+          />
+
+          <label for="PersonalityScore">Personality Score</label>
+          <input
+            type="number"
+            id="PersonalityScore"
+            name="PersonalityScore"
+            min="0"
+            max="100"
+            required
+          />
+
+          <label for="RecruitmentStrategy">Recruitment Strategy</label>
+          <select id="RecruitmentStrategy" name="RecruitmentStrategy" required>
+            <option value="" disabled selected>- Select -</option>
+            <option value="1">Aggressive</option>
+            <option value="2">Moderate</option>
+            <option value="3">Conservative</option>
+          </select>
+
+          <!-- ปุ่มสำหรับเคลียร์ฟอร์ม และส่งฟอร์ม -->
+          <div class="button-group">
+            <button class="clear-form" onclick="clearForm()">Clear Form</button>
+            <button type="submit ">Submit</button>
+          </div>
+        </form>
+        <p id="result"></p>
+      </div>
+    </div>
+
+    <!-- Popup และ overlay -->
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="popup" id="popup">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <div class="popup-content">
+        <p id="popupContent"></p>
+      </div>
+    </div>
+
+    <script>
+      // ฟังก์ชันสำหรับทำ prediction และแสดง popup
+      document.getElementById('form').addEventListener('submit', function (event) {
+        event.preventDefault(); // ป้องกันการส่งฟอร์มแบบปกติ
+
+        // ทำงานฟังก์ชัน makePrediction เมื่อฟอร์มถูกส่งและผ่านการตรวจสอบแล้ว
+        makePrediction();
+      });
+
+      function makePrediction() {
+        const data = {
+          Age: document.getElementById("Age").value,
+          Gender: document.getElementById("Gender").value,
+          EducationLevel: document.getElementById("EducationLevel").value,
+          ExperienceYears: document.getElementById("ExperienceYears").value,
+          PreviousCompanies: document.getElementById("PreviousCompanies").value,
+          DistanceFromCompany: document.getElementById("DistanceFromCompany")
+            .value,
+          InterviewScore: document.getElementById("InterviewScore").value,
+          SkillScore: document.getElementById("SkillScore").value,
+          PersonalityScore: document.getElementById("PersonalityScore").value,
+          RecruitmentStrategy: document.getElementById("RecruitmentStrategy")
+            .value,
+        };
+
+// ส่งข้อมูลไปที่ backend
+        fetch("/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            // แสดงผลลัพธ์ใน popup
+            const resultText = result.hire ? "Hire" : "Do not Hire";
+            document.getElementById("popupContent").innerText = resultText;
+            showPopup();
+          });
+      }
+
+      // ฟังก์ชันแสดง popup
+      function showPopup() {
+        document.getElementById("popupOverlay").style.display = "block";
+        document.getElementById("popup").style.display = "block";
+      }
+
+      // ฟังก์ชันปิด popup
+      document.getElementById("closeBtn").addEventListener("click", function () {
+        document.getElementById("popupOverlay").style.display = "none";
+        document.getElementById("popup").style.display = "none";
+      });
+
+      function clearForm() {
+        document.getElementById("form").reset();
+      }    </script>
+  </body>
+</html>
